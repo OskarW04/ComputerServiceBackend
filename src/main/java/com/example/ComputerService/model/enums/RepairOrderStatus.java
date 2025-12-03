@@ -1,0 +1,6 @@
+package com.example.ComputerService.model.enums;
+
+public enum RepairOrderStatus {
+    NEW, WAITING_FOR_TECHNICIAN, DIAGNOSING, WAITING_FOR_ACCEPTANCE,
+    WAITING_FOR_PARTS, IN_PROGRESS, READY_FOR_PICKUP, COMPLETED, CANCELLED
+}
