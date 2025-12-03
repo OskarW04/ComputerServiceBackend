@@ -1,7 +1,7 @@
 package com.example.ComputerService.controller;
 
 import com.example.ComputerService.repository.UserRepository;
-import org.apache.catalina.User;
+import com.example.ComputerService.model.Client;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,9 +20,9 @@ public class UserController {
     }
 
     @PostMapping("/add-user")
-    public ResponseEntity<?> addUser(@RequestBody User user) {
+    public ResponseEntity<?> addUser(@RequestBody Client user) {
         try {
-            User savedUser = userRepository.save(user);
+            Client savedUser = userRepository.save(user);
             return ResponseEntity.ok(savedUser);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Błąd zapisu: " + e.getMessage());
