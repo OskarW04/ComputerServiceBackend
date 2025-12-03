@@ -1,28 +1,24 @@
 package com.example.ComputerService.controller;
 
-import com.example.ComputerService.repository.UserRepository;
+import com.example.ComputerService.repository.ClientRepository;
 import com.example.ComputerService.model.Client;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-// Pamiętaj o importach swoich klas!
-// import com.twojapaczka.model.User;
-// import com.twojapaczka.repository.UserRepository;
 
 @RestController
 @RequestMapping("/api") // Opcjonalny prefiks
 public class UserController {
 
-    private final UserRepository userRepository;
+    private final ClientRepository clientRepository;
 
-    public UserController(UserRepository userRepository) {
-        this.userRepository = userRepository;
+    public UserController(ClientRepository clientRepository) {
+        this.clientRepository = clientRepository;
     }
 
     @PostMapping("/add-user")
     public ResponseEntity<?> addUser(@RequestBody Client user) {
         try {
-            Client savedUser = userRepository.save(user);
+            Client savedUser = clientRepository.save(user);
             return ResponseEntity.ok(savedUser);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Błąd zapisu: " + e.getMessage());
