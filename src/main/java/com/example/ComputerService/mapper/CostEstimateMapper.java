@@ -9,14 +9,14 @@ import org.springframework.stereotype.Component;
 @Component
 public class CostEstimateMapper {
 
-    public CostEstimateResponse mapToResponse(CostEstimate est, OrderResponse order){
+    public CostEstimateResponse mapToResponse(CostEstimate est){
         return new CostEstimateResponse(
+                est.getId(),
                 est.getApproved(),
                 est.getCreatedAt(),
                 est.getPartsCost(),
                 est.getLabourCost(),
-                est.getTotalCost(),
-                order
+                est.getTotalCost()
                 );
     }
 }

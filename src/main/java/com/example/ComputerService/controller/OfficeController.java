@@ -6,6 +6,7 @@ import com.example.ComputerService.dto.response.ClientResponse;
 import com.example.ComputerService.dto.response.OrderResponse;
 import com.example.ComputerService.model.Client;
 import com.example.ComputerService.service.ClientService;
+import com.example.ComputerService.service.OfficeService;
 import com.example.ComputerService.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +20,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class OfficeController {
     private final ClientService clientService;
+    private final OfficeService officeService;
 
     @PostMapping("/createClient")
     @PreAuthorize("hasAnyRole('OFFICE', 'MANAGER')")
@@ -36,6 +38,18 @@ public class OfficeController {
     @PreAuthorize("hasRole('OFFICE')")
     public ResponseEntity<ClientResponse> getClient(@PathVariable String phone){
         return ResponseEntity.ok(clientService.getClientByPhone(phone));
+    }
+
+    @PutMapping("/acceptEstimateForClient/{orderId}")
+    @PreAuthorize("hasRole('OFFICE')")
+    public ResponseEntity<String> acceptForClient(@PathVariable Long orderId){
+        return ResponseEntity.ok(officeService.acceptCostEstimateForClient(orderId));
+    }
+
+    @PutMapping("/rejectEstimateForClient/{orderId}")
+    @PreAuthorize("hasRole('OFFICE')")
+    public ResponseEntity<String> rejectForClient(@PathVariable Long orderId){
+        return ResponseEntity.ok(officeService.rejectCostEstimateForClient(orderId));
     }
 
 }

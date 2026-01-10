@@ -25,4 +25,5 @@ public class OrderResponse {
     private String clientPhone;
     private String technicianName;
     private String managerNotes;
+    private CostEstimateResponse costEstimateResponse;
 }

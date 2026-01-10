@@ -2,14 +2,19 @@ package com.example.ComputerService.service;
 
 import com.example.ComputerService.dto.request.ClientRequest;
 import com.example.ComputerService.dto.response.ClientResponse;
-import com.example.ComputerService.dto.response.OrderResponse;
 import com.example.ComputerService.mapper.ClientMapper;
 import com.example.ComputerService.model.Client;
+import com.example.ComputerService.model.CostEstimate;
+import com.example.ComputerService.model.RepairOrder;
+import com.example.ComputerService.model.enums.RepairOrderStatus;
 import com.example.ComputerService.repository.ClientRepository;
+import com.example.ComputerService.repository.CostEstRepository;
+import com.example.ComputerService.repository.RepairOrderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -18,6 +23,8 @@ import java.util.stream.Collectors;
 public class ClientService {
     private final ClientRepository clientRepository;
     private final ClientMapper clientMapper;
+    private final CostEstRepository costEstRepository;
+    private final RepairOrderRepository orderRepository;
 
     @Transactional
     public ClientResponse createClient(ClientRequest request){
@@ -66,6 +73,49 @@ public class ClientService {
         Client client = clientRepository.findByPhone(phone)
                 .orElseThrow(() -> new RuntimeException("Client does not exist"));
         return clientMapper.mapToResponse(client);
+    }
+
+    @Transactional
+    public String acceptCostEstimate(Long orderId, String phone){
+        RepairOrder order =  orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order doesn't exist"));
+        Client client = order.getClient();
+        CostEstimate est = costEstRepository.findByRepairOrder(order)
+                .orElseThrow(() -> new RuntimeException("This order don't have cost estimate assigned"));
+        if(!client.getPhone().equals(phone)){
+            throw new RuntimeException("This cost estimate doesn't belong to this client");
+        }
+        if(order.getStatus() != RepairOrderStatus.WAITING_FOR_ACCEPTANCE){
+            throw new RuntimeException("This order is not waiting for acceptance");
+        }
+        est.setApproved(Boolean.TRUE);
+        order.setStatus(RepairOrderStatus.IN_PROGRESS);
+        orderRepository.save(order);
+        costEstRepository.save(est);
+        return "Accepted repair for order number " + order.getOrderNumber();
+    }
+
+    @Transactional
+    public String rejectCostEstimate(Long orderId, String phone){
+        RepairOrder order =  orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order doesn't exist"));
+        Client client = order.getClient();
+        CostEstimate est = costEstRepository.findByRepairOrder(order)
+                .orElseThrow(() -> new RuntimeException("This order don't have cost estimate assigned"));
+        if(!client.getPhone().equals(phone)){
+            throw new RuntimeException("This cost estimate doesn't belong to this client");
+        }
+        if(order.getStatus() != RepairOrderStatus.WAITING_FOR_ACCEPTANCE){
+            throw new RuntimeException("This order is not waiting for acceptance");
+        }
+
+        est.setApproved(Boolean.FALSE);
+        order.setStatus(RepairOrderStatus.CANCELLED);
+        est.setLabourCost(new BigDecimal("50.00"));
+        est.setPartsCost(BigDecimal.ZERO);
+        orderRepository.save(order);
+        costEstRepository.save(est);
+        return "Rejected repair for order number " + order.getOrderNumber();
     }
 
 

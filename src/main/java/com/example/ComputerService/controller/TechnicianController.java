@@ -7,6 +7,7 @@ import com.example.ComputerService.service.OrderService;
 import com.example.ComputerService.service.TechnicianService;
 import lombok.RequiredArgsConstructor;
 
+import org.hibernate.query.Order;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -39,8 +40,15 @@ public class TechnicianController {
 
     @PostMapping("/{orderId}/generateCostEst")
     @PreAuthorize("hasRole('TECHNICIAN')")
-    public ResponseEntity<CostEstimateResponse> generateCostEst(@PathVariable Long orderId, @RequestBody CostEstimateRequest request, Authentication auth){
+    public ResponseEntity<OrderResponse> generateCostEst(@PathVariable Long orderId, @RequestBody CostEstimateRequest request, Authentication auth){
         String email = auth.getName();
         return ResponseEntity.ok(technicianService.generateCostEst(orderId, request, email));
+    }
+
+    @PutMapping("/finish/{orderId}")
+    @PreAuthorize("hasRole('TECHNICIAN')")
+    public ResponseEntity<String> finishOrder(@PathVariable Long orderId, Authentication auth){
+        String email = auth.getName();
+        return ResponseEntity.ok(technicianService.finishOrder(orderId, email));
     }
 }

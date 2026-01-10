@@ -1,15 +1,14 @@
 package com.example.ComputerService.service;
 
 import com.example.ComputerService.dto.request.CostEstimateRequest;
-import com.example.ComputerService.dto.response.CostEstimateResponse;
 import com.example.ComputerService.dto.response.OrderResponse;
-import com.example.ComputerService.mapper.CostEstimateMapper;
 import com.example.ComputerService.mapper.OrderMapper;
 import com.example.ComputerService.model.CostEstimate;
 import com.example.ComputerService.model.Employee;
 import com.example.ComputerService.model.RepairOrder;
 import com.example.ComputerService.model.enums.EmployeeRole;
 import com.example.ComputerService.model.enums.RepairOrderStatus;
+import com.example.ComputerService.repository.CostEstRepository;
 import com.example.ComputerService.repository.EmployeeRepository;
 import com.example.ComputerService.repository.RepairOrderRepository;
 import lombok.RequiredArgsConstructor;
@@ -18,15 +17,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
 public class TechnicianService {
     private final EmployeeRepository employeeRepository;
     private final RepairOrderRepository orderRepository;
+    private final CostEstRepository costEstRepository;
     private final OrderMapper orderMapper;
-    private final CostEstimateMapper costEstimateMapper;
 
     @Transactional
     public void startDiagnosing(Long orderId, String technicianEmail){
@@ -49,26 +47,42 @@ public class TechnicianService {
     }
 
     @Transactional
-    public CostEstimateResponse generateCostEst(Long orderId, CostEstimateRequest request, String techEmail){
+    public OrderResponse generateCostEst(Long orderId, CostEstimateRequest request, String techEmail){
         RepairOrder o = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order with that id does not exist"));
-        if(!Objects.equals(o.getAssignedTechnician().getEmail(), techEmail)){
+        if(o.getAssignedTechnician() == null || !o.getAssignedTechnician().getEmail().equals(techEmail)){
             throw new RuntimeException("This order is not assigned to this technician");
+        }
+        if(o.getStatus() != RepairOrderStatus.DIAGNOSING){
+            throw new RuntimeException("This order is not during diagnosing");
         }
         String currNote = o.getManagerNotes() != null ? o.getManagerNotes()+"\n" : "";
         o.setManagerNotes(currNote + "[DIAGNOSIS] " + request.getMessage());
+        o.setStatus(RepairOrderStatus.WAITING_FOR_ACCEPTANCE);
         CostEstimate estimate = new CostEstimate();
         estimate.setApproved(null);
         BigDecimal parts = request.getPartsCost();
         BigDecimal labour = request.getLabourCost();
         estimate.setLabourCost(labour);
         estimate.setPartsCost(parts);
-        estimate.setTotalCost(parts.add(labour));
         estimate.setCreatedAt(LocalDateTime.now());
         estimate.setRepairOrder(o);
-        OrderResponse orderResp = orderMapper.mapToResponse(o);
+        costEstRepository.save(estimate);
+        RepairOrder savedOrder = orderRepository.save(o);
+        return orderMapper.mapToResponse(savedOrder);
+    }
 
-        return costEstimateMapper.mapToResponse(estimate, orderResp);
+
+    public String finishOrder(Long orderId, String techEmail){
+        RepairOrder order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order doesn't exist"));
+        if(!order.getAssignedTechnician().getEmail().equals(techEmail)){
+            throw new RuntimeException("This order is not assigned to this technician");
+        }
+        order.setStatus(RepairOrderStatus.READY_FOR_PICKUP);
+        order.setEndDate(LocalDateTime.now());
+        RepairOrder savedOrder = orderRepository.save(order);
+        return "Order with number: "+ savedOrder.getOrderNumber() +" has been set as finished and ready for pickup by client";
     }
 
 

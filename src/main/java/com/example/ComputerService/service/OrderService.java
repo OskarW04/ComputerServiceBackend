@@ -49,7 +49,7 @@ public class OrderService {
         order.setOrderNumber("OR-" + datePart + "-" + randomSuffix);
 
         RepairOrder newOrder = orderRepository.save(order);
-        return orderMapper.mapToResponse(newOrder);
+        return orderMapper.mapToResponse(newOrder, null);
     }
 
     @Transactional
@@ -68,7 +68,7 @@ public class OrderService {
         order.setStatus(RepairOrderStatus.WAITING_FOR_TECHNICIAN);
 
         RepairOrder saved = orderRepository.save(order);
-        return orderMapper.mapToResponse(saved);
+        return orderMapper.mapToResponse(saved, null);
     }
 
     public List<OrderResponse> getAllOrders() {
