@@ -17,7 +17,7 @@ public class EmployeeController {
     private final EmployeeService employeeService;
 
     @GetMapping("/getAll")
-    @PreAuthorize("hasRole('MANAGER')")
+    @PreAuthorize("hasAnyRole('MANAGER', 'OFFICE', 'TECHNICIAN', 'WAREHOUSE')")
     public ResponseEntity<List<EmployeeResponse>> getAll(){
         return ResponseEntity.ok(employeeService.getAllEmployees());
     }
