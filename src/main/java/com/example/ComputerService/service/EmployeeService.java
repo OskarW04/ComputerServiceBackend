@@ -49,7 +49,7 @@ public class EmployeeService {
         if (employeeRepository.findByEmail(request.getEmail()).isPresent()){
             throw new RuntimeException("Employee with that email already exists");
         }
-        if(request.getPassword() == null){
+        if(request.getPassword() == null || request.getPassword().isEmpty()){
             throw new RuntimeException("Password has to be provided");
         }
         Employee emp = new Employee();
