@@ -3,7 +3,10 @@ package com.example.ComputerService.controller;
 import com.example.ComputerService.dto.request.CostEstimateRequest;
 import com.example.ComputerService.dto.response.CostEstimateResponse;
 import com.example.ComputerService.dto.response.OrderResponse;
+import com.example.ComputerService.model.ActionUsage;
+import com.example.ComputerService.model.ServiceAction;
 import com.example.ComputerService.service.OrderService;
+import com.example.ComputerService.service.ServiceActionService;
 import com.example.ComputerService.service.TechnicianService;
 import lombok.RequiredArgsConstructor;
 
@@ -21,6 +24,7 @@ import java.util.List;
 public class TechnicianController {
     private final OrderService orderService;
     private final TechnicianService technicianService;
+    private final ServiceActionService actionService;
 
     @GetMapping("/getAssignedOrders")
     @PreAuthorize("hasAnyRole('TECHNICIAN', 'MANAGER')")
@@ -38,6 +42,11 @@ public class TechnicianController {
                 + email);
     }
 
+    @GetMapping("/services/getAll")
+    @PreAuthorize("hasAnyRole('MANAGER', 'TECHNICIAN')")
+    public ResponseEntity<List<ServiceAction>> getAllServices() {
+        return ResponseEntity.ok(actionService.getAllServices());
+    }
     @PostMapping("/{orderId}/generateCostEst")
     @PreAuthorize("hasAnyRole('TECHNICIAN', 'MANAGER')")
     public ResponseEntity<OrderResponse> generateCostEst(@PathVariable Long orderId, @RequestBody CostEstimateRequest request, Authentication auth){

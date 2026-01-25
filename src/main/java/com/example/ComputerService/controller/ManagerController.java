@@ -23,11 +23,7 @@ public class ManagerController {
     public ResponseEntity<OrderResponse> assignTechnician(@PathVariable Long orderId, @PathVariable Long technicianId) {
         return ResponseEntity.ok(orderService.assignTechnician(orderId, technicianId));
     }
-    @GetMapping("/services/getAll")
-    @PreAuthorize("hasAnyRole('MANAGER', 'TECHNICIAN')")
-    public ResponseEntity<List<ServiceAction>> getAllServices() {
-        return ResponseEntity.ok(actionService.getAllServices());
-    }
+
     @PostMapping("/services/add")
     @PreAuthorize("hasRole('MANAGER')")
     public ResponseEntity<ServiceAction> addService(@RequestBody ServiceAction serviceAction) {
